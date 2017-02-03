@@ -12,7 +12,7 @@ var Connection = require('tedious').Connection;
 
 // Setup Restify Server
 var server = restify.createServer();
-var botenv = process.env.BOT_ENV;
+var botenv = "MYPC";
 server.listen(process.env.port || process.env.PORT || 3978, function () {
    console.log('%s listening to %s (%s)', server.name, server.url, botenv);
 });
