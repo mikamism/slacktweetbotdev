@@ -4,10 +4,28 @@
  作成者：mikamism
 */
 
+
 var restify = require('restify');
 var builder = require('botbuilder');
 // コネクションの作成
 var Connection = require('tedious').Connection;
+
+// Setup Restify Server
+var server = restify.createServer();
+var botenv = process.env.BOT_ENV;
+server.listen(process.env.port || process.env.PORT || 3978, function () {
+   console.log('%s listening to %s (%s)', server.name, server.url, botenv);
+});
+
+// Create chat bot
+var connector = new builder.ChatConnector({
+    appId: '101418b0-5bed-492b-9f55-25b768f91e62',
+    appPassword: 'ETdDasxDr9aEBdHwkhmfM4t'
+});
+var bot = new builder.UniversalBot(connector);
+server.post('/api/messages', connector.listen());
+
+/*
 
 // 排他処理
 var async = require('async');
@@ -18,16 +36,11 @@ var q = async.queue(function (task, done) {
 },1);
 
 // Azure上のbotを設定
-//var bot = new builder.BotConnectorBot({
-//  appId: 'sample-tweet-bot',
-//  appSecret: '642d202a2f6540958e913cacd739da3d'
-//});
-
-// Create chat bot
-var bot = new builder.ChatConnector({
-    appId: '101418b0-5bed-492b-9f55-25b768f91e62',
-    appPassword: 'ETdDasxDr9aEBdHwkhmfM4t'
+var bot = new builder.BotConnectorBot({
+  appId: 'sample-tweet-bot',
+  appSecret: '642d202a2f6540958e913cacd739da3d'
 });
+*/
 
 // DB接続情報の設定
 var config = {
