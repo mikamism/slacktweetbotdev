@@ -38,6 +38,13 @@ var config = {
   options: { encrypt: true, database: 'socialtestdb' }
 };
 
+bot.dialog('/', function (session) {
+
+    session.send("Hello World from " + botenv );
+});
+
+/*
+
 // 処理の振り分け
 bot.add('/', new builder.CommandDialog()
   // 大文字小文字でも正規表現でひとまとめとする
@@ -54,6 +61,7 @@ bot.add('/', new builder.CommandDialog()
     session.endDialog();
   })
 );
+*/
 
 // ヘルプが呼ばれた場合
 function showHelp(session) {
