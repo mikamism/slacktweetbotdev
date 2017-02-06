@@ -111,7 +111,7 @@ bot.dialog('/yahoo', [
 // SQL Serverへ接続
 function executeStatement(session, connection, sql, title, timeFlg) {
 
-  session.send('1');
+console.log('1');
 
   var Request = require('tedious').Request;
   var TYPES = require('tedious').TYPES;
@@ -161,9 +161,6 @@ function executeStatement(session, connection, sql, title, timeFlg) {
 
   // 最後に呼ばれる
   request.on('doneProc', function (rowCount, more) {
-
-session.send('rowCount:' + rowCount);
-
     console.log(rowCount + ' rows returned');
 
     // 結果が1件もない場合
@@ -176,7 +173,7 @@ session.send('rowCount:' + rowCount);
     q.resume();
   });
 
-session.send('2');
+console.log('2');
 
   // SQLを実行する
   setTimeout(connection.execSql(request),200);
