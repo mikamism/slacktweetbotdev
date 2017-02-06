@@ -66,6 +66,7 @@ bot.dialog('/', new builder.IntentDialog()
   })
 );
 
+// ヘルプが呼ばれた場合
 bot.dialog('/help', [
     function (session) {
         session.send('◆日時とそこからn時間分のサマリーを指定する場合\n\n'
@@ -78,7 +79,109 @@ bot.dialog('/help', [
 ]);
 
 bot.dialog('/yahoo', [
-    function (session) {
-        session.send('Hello.Yahoo World!!');
-    }
+  function (session) {
+    // タイトルの作成
+    var title = "Yahoo!急上昇ワード(1日集計)";
+
+    // コネクションの作成
+    var connection = new Connection(config);
+    // DB接続
+    connection.on('connect', function (err) {
+      var sql = "SELECT TOP 20 "
+                + "CONVERT(varchar(5),ROW_NUMBER() OVER(ORDER BY SUM(a.score) DESC)) + ' ： ' + '<http://search.yahoo.co.jp/search?p=' + REPLACE(a.word,'#','%23') + '&fr=krank_hb_new&ei=UTF-8&rkf=1|[' + a.word + ']>' as row "
+                + ",'<https://www.google.co.jp/search?q=' + REPLACE(a.word,'#','') + '|[*Google*]>' google"
+                + ",'<https://www.google.co.jp/trends/explore?date=now%201-d&geo=JP&q=' + REPLACE(a.word,'#','') + '|[*Trend*]>' trend "
+                + ",dbo.funcExistYahooSurgeMaster(a.word) + ':' newflg "
+                + "FROM dbo.T_YahooSurgeWordsHour a "
+                + "WHERE a.timeSum >= CONVERT(DATETIME, CONVERT(varchar(13), DATEADD(hour, -24, dbo.Now()), 120)+':00') "
+                + "GROUP BY a.word "
+                + "ORDER BY SUM(a.score) DESC, a.word DESC;"
+      // データ取得
+      executeStatement(session, connection, sql,title, 0);
+    });
+    // sessionを閉じる
+    session.endDialog();
+  },
 ]);
+
+// SQL Serverへ接続
+function executeStatement(session, connection, sql, title, timeFlg) {
+  var Request = require('tedious').Request;
+  var TYPES = require('tedious').TYPES;
+
+  q.pause();
+
+  // クエリの作成
+  var request = new Request(sql, function (err) {
+    if (err) {
+      session.send('クエリ作成時にエラーが発生しました。管理者へお問い合わせください。');
+      session.send(sql);
+      console.log(err);
+      q.resume();
+    }
+  });
+
+  // 結果を宣言し初期化
+  var result = "";
+
+  // タイトルを付与
+  result = title;
+
+  // 検索結果判定フラグ
+  var searchResult = 0;
+
+  // 時間フラグにて時間を管理
+  if (timeFlg == 0)
+    // タイトルに時間を付与
+    result += makeJpDate() + "\n\n";
+  else
+    result += "\n\n";
+
+  // 行を取得する度に呼ばれる
+  request.on('row', function (columns) {
+    // 取得した件数分ループ
+    columns.forEach(function (column) {
+      if (column.value === null) {
+        console.log('NULL');
+      } else {
+        result += column.value + " ";
+      }
+    });
+    // 改行をセット
+    result += "\n\n";
+    searchResult = 1;
+  });
+
+  // 最後に呼ばれる
+  request.on('doneProc', function (rowCount, more) {
+    console.log(rowCount + ' rows returned');
+
+    // 結果が1件もない場合
+    if (searchResult == 0) {
+      result += "検索結果がありません。条件を変更してください。";
+    }
+    // 結果の出力 
+    session.send(result);
+
+    q.resume();
+  });
+
+  // SQLを実行する
+  setTimeout(connection.execSql(request),200);
+}
+
+function makeJpDate() {
+  // 現在の時刻を取得
+  var dt = new Date();
+
+  // 日本時間に修正
+  dt.setTime(dt.getTime() + 32400000);
+
+  // 日付を数字として取り出す
+  var year = dt.getFullYear();
+  var month = dt.getMonth()+1;
+  var day = dt.getDate();
+  var hour = dt.getHours();
+
+  return year + '/' + month + '/' + day + ' ' + hour + ':00';
+}
