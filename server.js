@@ -59,8 +59,9 @@ bot.dialog('/', function (session) {
 */
 
 bot.dialog('/', new builder.IntentDialog()
-.matches('^help','/help')
-.onDefault(builder.DialogAction.send("Hello Default World!")));
+.matches(/^help/i,'/help')
+.onDefault(builder.DialogAction.send("Hello Default World!"))
+);
 
 bot.dialog('/help', [
     function (session) {
