@@ -51,20 +51,34 @@ server.post('/api/messages', connector.listen());
 //=========================================================
 // Bots Dialogs
 //=========================================================
-/*
-bot.dialog('/', function (session) {
 
-    session.send("Hello World from " + botenv );
-});
-*/
-
+// 処理の振り分け
 bot.dialog('/', new builder.IntentDialog()
-.matches(/^help/i,'/help')
-.onDefault(builder.DialogAction.send("Hello Default World!"))
+  .matches(/^Reminder: yahoo/, '/yahoo')
+  .matches(/^Reminder: 1 hour yahoo/, '/yahoo1hour')
+  .matches(/^Reminder: twitter/, '/twittertrend')
+  .matches(/^Reminder: 1 hour twitter/, '/twittertrend1hour')
+  .matches(/^help/i,'/help')
+  //.onDefault(builder.DialogAction.send("Hello Default World!"))
+  .onDefault(function (session) {
+    // 何もせずに処理を終了する
+    session.endDialog();
+  })
 );
 
 bot.dialog('/help', [
     function (session) {
-        session.send('Hello.Help World!!');
+        session.send('◆日時とそこからn時間分のサマリーを指定する場合\n\n'
+              + 'Reminder: dat,指定日(yyyymmddhh24),n,yahoo or twitter\n\n'
+              + '例：Yahooトレンドワードの2016年8月20日15時から8時間分のサマリーを取得する場合\n\n'
+              + 'Reminder: dat,2016082015,8,yahoo'
+              );
+        session.endDialog();
+    }
+]);
+
+bot.dialog('/yahoo', [
+    function (session) {
+        session.send('Hello.Yahoo World!!');
     }
 ]);
