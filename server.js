@@ -85,7 +85,7 @@ bot.dialog('/yahoo', [
 
 //テスト用
     session.send('Yahoo!急上昇ワード(1日集計)');
-
+/*
     // コネクションの作成
     var connection = new Connection(config);
     // DB接続
@@ -102,6 +102,7 @@ bot.dialog('/yahoo', [
       // データ取得
       executeStatement(session, connection, sql,title, 0);
     });
+*/
     // sessionを閉じる
     session.endDialog();
   }
