@@ -59,7 +59,7 @@ bot.dialog('/', function (session) {
 */
 
 bot.dialog('/', new builder.IntentDialog()
-.matches('^help')
+.matches('^help', builder.DialogAction.beginDialog('/help'))
 .onDefault(builder.DialogAction.send("Hello Default World!")));
 
 bot.dialog('/help', [
