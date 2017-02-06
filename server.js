@@ -58,7 +58,7 @@ bot.dialog('/', function (session) {
 });
 */
 
-bot.beginDialogAction('/help');
+bot.beginDialogAction('help');
 
 bot.dialog('/help', [
     function (session, args) {
