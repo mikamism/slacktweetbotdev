@@ -83,9 +83,6 @@ bot.dialog('/yahoo', [
     // タイトルの作成
     var title = "Yahoo!急上昇ワード(1日集計)";
 
-//テスト用
-//session.send('Yahoo!急上昇ワード(1日集計)');
-
     // コネクションの作成
     var connection = new Connection(config);
     // DB接続
@@ -110,8 +107,6 @@ bot.dialog('/yahoo', [
 
 // SQL Serverへ接続
 function executeStatement(session, connection, sql, title, timeFlg) {
-
-console.log('1');
 
   var Request = require('tedious').Request;
   var TYPES = require('tedious').TYPES;
@@ -173,10 +168,9 @@ console.log('1');
     q.resume();
   });
 
-console.log('2');
-
   // SQLを実行する
-  setTimeout(connection.execSql(request),200);
+  //setTimeout(connection.execSql(request),200);
+  connection.execSql(request)
 }
 
 function makeJpDate() {
