@@ -68,13 +68,13 @@ bot.dialog('/', new builder.IntentDialog()
 
 // ヘルプが呼ばれた場合
 bot.dialog('/help', [
-    function (session) {
-        session.send('◆日時とそこからn時間分のサマリーを指定する場合\n\n'
-              + 'Reminder: dat,指定日(yyyymmddhh24),n,yahoo or twitter\n\n'
-              + '例：Yahooトレンドワードの2016年8月20日15時から8時間分のサマリーを取得する場合\n\n'
-              + 'Reminder: dat,2016082015,8,yahoo'
-              );
-        session.endDialog();
+  function (session) {
+      session.send('◆日時とそこからn時間分のサマリーを指定する場合\n\n'
+            + 'Reminder: dat,指定日(yyyymmddhh24),n,yahoo or twitter\n\n'
+            + '例：Yahooトレンドワードの2016年8月20日15時から8時間分のサマリーを取得する場合\n\n'
+            + 'Reminder: dat,2016082015,8,yahoo'
+            );
+      session.endDialog();
     }
 ]);
 
@@ -82,6 +82,9 @@ bot.dialog('/yahoo', [
   function (session) {
     // タイトルの作成
     var title = "Yahoo!急上昇ワード(1日集計)";
+
+//テスト用
+    session.send('Yahoo!急上昇ワード(1日集計)');
 
     // コネクションの作成
     var connection = new Connection(config);
@@ -101,7 +104,7 @@ bot.dialog('/yahoo', [
     });
     // sessionを閉じる
     session.endDialog();
-  },
+  }
 ]);
 
 // SQL Serverへ接続
