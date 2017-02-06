@@ -1,5 +1,33 @@
+/*
+ 処理概要：TwitterとYahooのトレンドワードを定期的に呟くBot用
+ 作成日：2017/2/6
+ 作成者：mikamism
+*/
+
 var restify = require('restify');
 var builder = require('botbuilder');
+
+// コネクションの作成
+var Connection = require('tedious').Connection;
+
+// 排他処理
+var async = require('async');
+
+// 同時実行を1に制限
+var q = async.queue(function (task, done) {
+  done();
+},1);
+
+//=========================================================
+// DB接続情報の設定
+//=========================================================
+var config = {
+  userName: 'socialadmin',
+  password: 'ufeuQ7sPu2',
+  server: 'socialtestdb.database.windows.net',
+  // Azure上のDBの場合は必須
+  options: { encrypt: true, database: 'socialtestdb' }
+};
 
 //=========================================================
 // Bot Setup
@@ -23,8 +51,33 @@ server.post('/api/messages', connector.listen());
 //=========================================================
 // Bots Dialogs
 //=========================================================
-
+/*
 bot.dialog('/', function (session) {
 
     session.send("Hello World from " + botenv );
 });
+*/
+// 処理の振り分け
+bot.add('/', new builder.CommandDialog()
+  // 大文字小文字でも正規表現でひとまとめとする
+  .matches('^(Reminder: ヤフー|Reminder: Yahoo|Reminder: yahoo|Reminder: やふー|Reminder: やほー|Reminder: ヤホー)', builder.DialogAction.beginDialog('/yahoo'))
+  .matches('^(Reminder: 1 hour yahoo)', builder.DialogAction.beginDialog('/yahoo1hour'))
+  .matches('^(Reminder: twitter)', builder.DialogAction.beginDialog('/twittertrend'))
+  .matches('^(Reminder: 1 hour twitter)', builder.DialogAction.beginDialog('/twittertrend1hour'))
+  .matches('^(Reminder: dat)', builder.DialogAction.beginDialog('/dat'))
+  .matches('^help', showHelp)
+  .onDefault(function (session) {
+    // 何もせずに処理を終了する
+    session.endDialog();
+  })
+);
+
+// ヘルプが呼ばれた場合
+function showHelp(session) {
+  session.send('◆日時とそこからn時間分のサマリーを指定する場合\n\n'
+              + 'Reminder: dat,指定日(yyyymmddhh24),n,yahoo or twitter\n\n'
+              + '例：Yahooトレンドワードの2016年8月20日15時から8時間分のサマリーを取得する場合\n\n'
+              + 'Reminder: dat,2016082015,8,yahoo'
+              );
+  session.endDialog();
+}
