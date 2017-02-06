@@ -78,6 +78,7 @@ bot.dialog('/help', [
     }
 ]);
 
+// Yahoo(1日集計)が呼ばれた場合
 bot.dialog('/yahoo', [
   function (session) {
     // タイトルの作成
@@ -104,6 +105,187 @@ bot.dialog('/yahoo', [
     session.endDialog();
   }
 ]);
+
+// Yahoo 1 hourの場合
+bot.dialog('/yahoo1hour', [
+  function (session) {
+    // タイトルの作成
+    var title = "Yahoo!急上昇ワード：";
+
+    // コネクションの作成
+    var connection = new Connection(config);
+    // DB接続
+    connection.on('connect', function (err) {
+      var sql = "SELECT TOP 20 "
+                + "CONVERT(varchar(5),ROW_NUMBER() OVER(ORDER BY SUM(a.score) DESC)) + ' ： ' + '<http://search.yahoo.co.jp/search?p=' + REPLACE(a.word,'#','%23') + '&fr=krank_hb_new&ei=UTF-8&rkf=1|[' + a.word + ']>' as row "
+                + ",'<https://www.google.co.jp/search?q=' + REPLACE(a.word,'#','') + '|[*Google*]>' google"
+                + ",'<https://www.google.co.jp/trends/explore?date=now%201-d&geo=JP&q=' + REPLACE(a.word,'#','') + '|[*Trend*]>' trend "
+                + ",dbo.funcExistYahooSurgeMasterHour(a.word) + ':' newflg "
+                + "FROM dbo.T_YahooSurgeWordsHour a "
+                + "WHERE a.timeSum >= CONVERT(DATETIME, CONVERT(varchar(13), DATEADD(hour, -1, dbo.Now()), 120)+':00') "
+                + "GROUP BY a.word "
+                + "ORDER BY SUM(a.score) DESC;"
+      // データ取得
+      executeStatement(session, connection, sql, title, 0);
+    });
+    // sessionを閉じる
+    session.endDialog();
+  },
+]);
+
+// Twitterトレンドの場合
+bot.dialog('/twittertrend', [
+  function (session) {
+    // タイトルの作成
+    var title = "Twitterトレンドワード(1日集計)：";
+
+    // コネクションの作成
+    var connection = new Connection(config);
+    // DB接続
+    connection.on('connect', function (err) {
+      var sql = "SELECT TOP 20 "
+                + "CONVERT(varchar(5),ROW_NUMBER() OVER(ORDER BY SUM(a.score) DESC)) + ' ： ' + '<https://twitter.com/search?q=' + REPLACE(a.word,'#','%23') + '&src=tren|[' + a.word + ']>' as row "
+                + ",'<https://www.google.co.jp/search?q=' + REPLACE(a.word,'#','') + '|[*Google*]>' google "
+                + ",'<https://www.google.co.jp/trends/explore?date=now%201-d&geo=JP&q=' + REPLACE(a.word,'#','') + '|[*Trend*]>' trend "
+                + ",dbo.funcExistTwitterTrendMaster(a.word) + ':' newflg "
+                + "FROM dbo.T_TwitterTrendWordsHour a "
+                + "WHERE a.timeSum >= CONVERT(DATETIME, CONVERT(varchar(13), DATEADD(hour, -24, dbo.Now()), 120)+':00') "
+                + "GROUP BY a.word "
+                + "ORDER BY SUM(a.score) DESC, a.word DESC;"
+      // データ取得
+      executeStatement(session, connection, sql, title, 0);
+    });
+    // sessionを閉じる
+    session.endDialog();
+  },
+]);
+
+// 1 hour Twitterの場合
+bot.dialog('/twittertrend1hour', [
+  function (session) {
+    // タイトルの作成
+    var title = "Twitterトレンドワード：";
+
+    // コネクションの作成
+    var connection = new Connection(config);
+    // DB接続
+    connection.on('connect', function (err) {
+      var sql = "SELECT TOP 20 "
+                + "CONVERT(varchar(5),ROW_NUMBER() OVER(ORDER BY SUM(a.score) DESC)) + ' ： ' + '<https://twitter.com/search?q=' + REPLACE(a.word,'#','%23') + '&src=tren|[' + a.word + ']>' as row "
+                + ",'<https://www.google.co.jp/search?q=' + REPLACE(a.word,'#','') + '|[*Google*]>' google "
+                + ",'<https://www.google.co.jp/trends/explore?date=now%201-d&geo=JP&q=' + REPLACE(a.word,'#','') + '|[*Trend*]>' trend "
+                + ",dbo.funcExistTwitterTrendMasterHour(a.word) + ':' newflg "
+                + "FROM dbo.T_TwitterTrendWordsHour a "
+                + "WHERE a.timeSum >= CONVERT(DATETIME, CONVERT(varchar(13), DATEADD(hour, -1, dbo.Now()), 120)+':00') "
+                + "GROUP BY a.word "
+                + "ORDER BY SUM(a.score) DESC;"
+      // データ取得
+      executeStatement(session, connection, sql, title, 0);
+    });
+    // sessionを閉じる
+    session.endDialog();
+  },
+]);
+
+// 日時指定
+bot.dialog('/dat', [
+  function (session) {
+    // 投稿内容を取得
+    var usertext = session.message.text;
+
+    // カンマ区切りで文字列を取得
+    var csvData = usertext.split(",");
+
+    // 形式チェックテキスト
+    var textFormat = "";
+    var year = "";
+    var month = "";
+    var day = "";
+    var hour = "";
+
+    // 日時の形式に問題ないかチェック
+    if( csvData[1].length != 10 ) {
+      textFormat = "日時の形式が正しくありません。\n\n"
+                  + "yyyymmddhh24の形式で入力してください。\n\n"
+                  + "例）2016年8月25日18時の場合\n\n"
+                  + "2016082518";
+
+      session.send(textFormat);
+      session.endDialog();
+
+    } else {
+      year = csvData[1].substring(0,4);
+      month = csvData[1].substring(4,6);
+      day = csvData[1].substring(6,8);
+      hour = csvData[1].substring(8,10);
+
+      // タイトルの作成
+      var title = csvData[3] + "急上昇ワード(" + year + "年" + month + "月" + day + "日"+ hour + "時" + " " + csvData[2] + "時間集計)";
+
+      // コネクションの作成
+      var connection = new Connection(config);
+      // DB接続
+      connection.on('connect', function (err) {
+
+        var sql = "";
+
+        // twitterとyahooで振り分け
+        if( usertext.indexOf("yahoo") != -1 ) {
+          sql = "SELECT TOP 20 "
+                    + "CONVERT(varchar(5),ROW_NUMBER() OVER(ORDER BY SUM(a.score) DESC)) + ' ： ' + '<http://search.yahoo.co.jp/search?p=' + REPLACE(a.word,'#','%23') + '&fr=krank_hb_new&ei=UTF-8&rkf=1|[' + a.word + ']>' as row "
+                    + ",'<https://www.google.co.jp/search?q=' + REPLACE(a.word,'#','') + '|[*Google*]>' google"
+                    + ",'<https://www.google.co.jp/trends/explore?date=now%201-d&geo=JP&q=' + REPLACE(a.word,'#','') + '|[*Trend*]>' trend "
+                    + ",dbo.funcExistYahooSurgeMaster(a.word) + ':' newflg "
+                    + "FROM dbo.T_YahooSurgeWordsHour a "
+                    + "WHERE a.timeSum >= CONVERT(DATETIME, CONVERT(varchar(13), DATEADD(hour, -" + csvData[2] + ","
+                    + "CONVERT(DATETIME, "
+                        + "substring('" + csvData[1] + "',1,4)+'/'+ "
+                        + "substring('" + csvData[1] + "',5,2)+'/'+ "
+                        + "substring('" + csvData[1] + "',7,2)+' ' + "
+                        + "substring('" + csvData[1] + "',9,2)+':00' "
+                        + ")"
+                    + "), 120)+':00') "
+                    + "AND a.timeSum <= CONVERT(DATETIME,"
+                        + "substring('" + csvData[1] + "',1,4)+'/'+ "
+                        + "substring('" + csvData[1] + "',5,2)+'/'+ "
+                        + "substring('" + csvData[1] + "',7,2)+' ' + "
+                        + "substring('" + csvData[1] + "',9,2)+':00' "
+                        + ")"
+                    + "GROUP BY a.word "
+                    + "ORDER BY SUM(a.score) DESC, a.word DESC;";
+        } else {
+          sql = "SELECT TOP 20 "
+                    + "CONVERT(varchar(5),ROW_NUMBER() OVER(ORDER BY SUM(a.score) DESC)) + ' ： ' + '<https://twitter.com/search?q=' + REPLACE(a.word,'#','%23') + '&src=tren|[' + a.word + ']>' as row "
+                    + ",'<https://www.google.co.jp/search?q=' + REPLACE(a.word,'#','') + '|[*Google*]>' google "
+                    + ",'<https://www.google.co.jp/trends/explore?date=now%201-d&geo=JP&q=' + REPLACE(a.word,'#','') + '|[*Trend*]>' trend "
+                    + ",dbo.funcExistTwitterTrendMaster(a.word) + ':' newflg "
+                    + "FROM dbo.T_TwitterTrendWordsHour a "
+                    + "WHERE a.timeSum >= CONVERT(DATETIME, CONVERT(varchar(13), DATEADD(hour, -" + csvData[2] + ","
+                    + "CONVERT(DATETIME, "
+                        + "substring('" + csvData[1] + "',1,4)+'/'+ "
+                        + "substring('" + csvData[1] + "',5,2)+'/'+ "
+                        + "substring('" + csvData[1] + "',7,2)+' ' + "
+                        + "substring('" + csvData[1] + "',9,2)+':00' "
+                        + ")"
+                    + "), 120)+':00') "
+                    + "AND a.timeSum <= CONVERT(DATETIME,"
+                        + "substring('" + csvData[1] + "',1,4)+'/'+ "
+                        + "substring('" + csvData[1] + "',5,2)+'/'+ "
+                        + "substring('" + csvData[1] + "',7,2)+' ' + "
+                        + "substring('" + csvData[1] + "',9,2)+':00' "
+                        + ")"
+                    + "GROUP BY a.word "
+                    + "ORDER BY SUM(a.score) DESC, a.word DESC;";
+        }
+        // データ取得
+        executeStatement(session, connection, sql,title, 1);
+      });
+      // sessionを閉じる
+      session.endDialog();
+    }
+  },
+]);
+
 
 // SQL Serverへ接続
 function executeStatement(session, connection, sql, title, timeFlg) {
@@ -169,7 +351,6 @@ function executeStatement(session, connection, sql, title, timeFlg) {
   });
 
   // SQLを実行する
-  //setTimeout(connection.execSql(request),200);
   connection.execSql(request)
 }
 
