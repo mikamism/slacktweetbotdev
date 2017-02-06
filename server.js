@@ -57,27 +57,11 @@ bot.dialog('/', function (session) {
     session.send("Hello World from " + botenv );
 });
 */
-// 処理の振り分け
-bot.add('/', new builder.CommandDialog()
-  // 大文字小文字でも正規表現でひとまとめとする
-  .matches('^(Reminder: ヤフー|Reminder: Yahoo|Reminder: yahoo|Reminder: やふー|Reminder: やほー|Reminder: ヤホー)', builder.DialogAction.beginDialog('/yahoo'))
-  .matches('^(Reminder: 1 hour yahoo)', builder.DialogAction.beginDialog('/yahoo1hour'))
-  .matches('^(Reminder: twitter)', builder.DialogAction.beginDialog('/twittertrend'))
-  .matches('^(Reminder: 1 hour twitter)', builder.DialogAction.beginDialog('/twittertrend1hour'))
-  .matches('^(Reminder: dat)', builder.DialogAction.beginDialog('/dat'))
-  .matches('^help', showHelp)
-  .onDefault(function (session) {
-    // 何もせずに処理を終了する
-    session.endDialog();
-  })
-);
 
-// ヘルプが呼ばれた場合
-function showHelp(session) {
-  session.send('◆日時とそこからn時間分のサマリーを指定する場合\n\n'
-              + 'Reminder: dat,指定日(yyyymmddhh24),n,yahoo or twitter\n\n'
-              + '例：Yahooトレンドワードの2016年8月20日15時から8時間分のサマリーを取得する場合\n\n'
-              + 'Reminder: dat,2016082015,8,yahoo'
-              );
-  session.endDialog();
-}
+bot.beginDialogAction('/help');
+
+bot.dialog('/help', [
+    function (session, args) {
+        session.endDialog("Loading news from: " + args.data);
+    }
+]);
