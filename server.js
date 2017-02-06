@@ -111,9 +111,8 @@ bot.dialog('/yahoo', [
 // SQL Serverへ接続
 function executeStatement(session, connection, sql, title, timeFlg) {
 
-  session.send(sql);
+  //session.send(sql);
 
-  /*
   var Request = require('tedious').Request;
   var TYPES = require('tedious').TYPES;
 
@@ -174,9 +173,10 @@ function executeStatement(session, connection, sql, title, timeFlg) {
     q.resume();
   });
 
+  session.send(result);
+
   // SQLを実行する
-  setTimeout(connection.execSql(request),200);
-  */
+  //setTimeout(connection.execSql(request),200);
 }
 
 function makeJpDate() {
