@@ -58,10 +58,12 @@ bot.dialog('/', function (session) {
 });
 */
 
-bot.beginDialogAction('help');
+bot.dialog('/', new builder.IntentDialog()
+.matches('^help')
+.onDefault(builder.DialogAction.send("Hello Default World!")));
 
 bot.dialog('/help', [
-    function (session, args) {
-        session.endDialog("Loading news from: " + args.data);
+    function (session) {
+        session.send('Hello.Help World!!');
     }
 ]);
