@@ -144,8 +144,8 @@ bot.dialog('/twittertrend', [
     // DB接続
     connection.on('connect', function (err) {
       var sql = "SELECT TOP 20 "
-                //+ "CONVERT(varchar(5),ROW_NUMBER() OVER(ORDER BY SUM(a.score) DESC)) + ' ： ' + '<https://twitter.com/search?q=' + REPLACE(a.word,'#','%23') + '&src=tren|[' + a.word + ']>' as row "
-                + "'<https://www.google.co.jp/search?q=' + REPLACE(a.word,'#','') + '|[*Google*]>' google "
+                + "CONVERT(varchar(5),ROW_NUMBER() OVER(ORDER BY SUM(a.score) DESC)) + ' ： ' + '<https://twitter.com/search?q=' + REPLACE(a.word,'#','%23') + '&src=tren|[' + a.word + ']>' as row "
+                + ",'<https://www.google.co.jp/search?q=' + REPLACE(a.word,'#','') + '|[Google]>' google "
                 + ",'<https://www.google.co.jp/trends/explore?date=now%201-d&geo=JP&q=' + REPLACE(a.word,'#','') + '|[*Trend*]>' trend "
                 + ",dbo.funcExistTwitterTrendMaster(a.word) + ':' newflg "
                 + "FROM dbo.T_TwitterTrendWordsHour a "
