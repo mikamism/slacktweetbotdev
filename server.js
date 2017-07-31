@@ -117,9 +117,12 @@ bot.dialog('/yahoo1hour', [
     // DB接続
     connection.on('connect', function (err) {
       var sql = "SELECT TOP 20 "
-                + "CONVERT(varchar(5),ROW_NUMBER() OVER(ORDER BY SUM(a.score) DESC)) + ' ： ' + '<http://search.yahoo.co.jp/search?p=' + REPLACE(a.word,'#','%23') + '&fr=krank_hb_new&ei=UTF-8&rkf=1|[' + a.word + ']>' as row "
-                + ",'<https://www.google.co.jp/search?q=' + REPLACE(a.word,'#','') + '|[Google]>' google"
-                + ",'<https://www.google.co.jp/trends/explore?date=now%201-d&geo=JP&q=' + REPLACE(a.word,'#','') + '|[Trend]>' trend "
+                //+ "CONVERT(varchar(5),ROW_NUMBER() OVER(ORDER BY SUM(a.score) DESC)) + ' ： ' + '<http://search.yahoo.co.jp/search?p=' + REPLACE(a.word,'#','%23') + '&fr=krank_hb_new&ei=UTF-8&rkf=1|[' + a.word + ']>' as row "
+                //+ ",'<https://www.google.co.jp/search?q=' + REPLACE(a.word,'#','') + '|[Google]>' google"
+                //+ ",'<https://www.google.co.jp/trends/explore?date=now%201-d&geo=JP&q=' + REPLACE(a.word,'#','') + '|[Trend]>' trend "
+                + "a.word as row "
+                + ",REPLACE(a.word,'#','') as google "
+                + ",REPLACE(a.word,'#','') as trend "
                 + ",dbo.funcExistYahooSurgeMasterHour(a.word) + ':' newflg "
                 + "FROM dbo.T_YahooSurgeWordsHour a "
                 + "WHERE a.timeSum >= CONVERT(DATETIME, CONVERT(varchar(13), DATEADD(hour, -1, dbo.Now()), 120)+':00') "
@@ -316,6 +319,7 @@ function executeStatement(session, connection, sql, title, timeFlg) {
 
   // カウンタ変数
   var loopcnt = 0;
+  var ploopcnt = 1;
 
   // 検索結果判定フラグ
   var searchResult = 0;
@@ -336,7 +340,11 @@ function executeStatement(session, connection, sql, title, timeFlg) {
       } else {
         //result += column.value + " ";
         if (loopcnt == 0) {
-          result += "<https://twitter.com/search?q=" + encodeURI(column.value) + "&src=tren|[" + column.value + "]>";
+          if( title.indexOf("yahoo") != -1 ) {
+            result += ploopcnt + ":" + "<http://search.yahoo.co.jp/search?p=" + encodeURI(column.value) + "&fr=krank_hb_new&ei=UTF-8&rkf=1|[" + column.value + "]>";
+          } else {
+            result += ploopcnt + ":" + "<https://twitter.com/search?q=" + encodeURI(column.value) + "&src=tren|[" + column.value + "]>";
+          }
         } else if (loopcnt == 1) {
           result += "<https://www.google.co.jp/search?q=" + encodeURI(column.value) + "|[Google]>";
         } else if (loopcnt == 2) {
@@ -352,6 +360,7 @@ function executeStatement(session, connection, sql, title, timeFlg) {
     result += "\n\n";
     searchResult = 1;
     loopcnt = 0;
+    ploopcnt ++;
   });
 
   // 最後に呼ばれる
