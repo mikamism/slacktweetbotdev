@@ -328,7 +328,7 @@ function executeStatement(session, connection, sql, title, timeFlg) {
       if (column.value === null) {
         console.log('NULL');
       } else {
-        result += column.value + " ";
+        result += URIencode(column.value) + " ";
       }
     });
     // 改行をセット
