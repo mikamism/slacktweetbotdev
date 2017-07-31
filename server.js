@@ -172,9 +172,11 @@ bot.dialog('/twittertrend1hour', [
     connection.on('connect', function (err) {
       var sql = "SELECT TOP 20 "
                 //+ "CONVERT(varchar(5),ROW_NUMBER() OVER(ORDER BY SUM(a.score) DESC)) + ' ： ' + '<https://twitter.com/search?q=' + REPLACE(a.word,'#','%23') + '&src=tren|[' + a.word + ']>' as row "
+                //+ ",'<https://www.google.co.jp/search?q=' + REPLACE(a.word,'#','') + '|[Google]>' google "
+                //+ ",'<https://www.google.co.jp/trends/explore?date=now%201-d&geo=JP&q=' + REPLACE(a.word,'#','') + '|[Trend]>' trend "
                 + "a.word as row "
-                + ",'<https://www.google.co.jp/search?q=' + REPLACE(a.word,'#','') + '|[Google]>' google "
-                + ",'<https://www.google.co.jp/trends/explore?date=now%201-d&geo=JP&q=' + REPLACE(a.word,'#','') + '|[Trend]>' trend "
+                + ",REPLACE(a.word,'#','') as google "
+                + ",REPLACE(a.word,'#','') as trend "
                 + ",dbo.funcExistTwitterTrendMasterHour(a.word) + ':' newflg "
                 + "FROM dbo.T_TwitterTrendWordsHour a "
                 + "WHERE a.timeSum >= CONVERT(DATETIME, CONVERT(varchar(13), DATEADD(hour, -1, dbo.Now()), 120)+':00') "
@@ -332,10 +334,17 @@ function executeStatement(session, connection, sql, title, timeFlg) {
       if (column.value === null) {
         console.log('NULL');
       } else {
+        //result += column.value + " ";
         if (loopcnt == 0) {
           result += "<https://twitter.com/search?q=" + encodeURI(column.value) + "&src=tren|[" + column.value + "]>";
+        } else if (loopcnt == 1) {
+          result += "<https://www.google.co.jp/search?q=" + encodeURI(column.value) + "|[Google]>";
+        } else if (loopcnt == 2) {
+          result += "<https://www.google.co.jp/trends/explore?date=now%201-d&geo=JP&q=" + encodeURI(column.value) + "|[Trend]>";
+        } else {
+          result += column.value + " ";
         }
-        result += column.value + " ";
+
         loopcnt++;
       }
     });
