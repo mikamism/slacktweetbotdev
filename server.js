@@ -333,7 +333,7 @@ function executeStatement(session, connection, sql, title, timeFlg) {
         console.log('NULL');
       } else {
         if (loopcnt == 0) {
-          result += "<https://twitter.com/search?q=" + encodeURI(column.value) + "&src=tren|[" + encodeURI(column.value) + "]>";
+          result += "<https://twitter.com/search?q=" + encodeURI(column.value) + "&src=tren|[" + column.value + "]>";
         }
         result += column.value + " ";
         loopcnt++;
