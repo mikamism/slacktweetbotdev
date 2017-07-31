@@ -171,7 +171,8 @@ bot.dialog('/twittertrend1hour', [
     // DB接続
     connection.on('connect', function (err) {
       var sql = "SELECT TOP 20 "
-                + "CONVERT(varchar(5),ROW_NUMBER() OVER(ORDER BY SUM(a.score) DESC)) + ' ： ' + '<https://twitter.com/search?q=' + REPLACE(a.word,'#','%23') + '&src=tren|[' + a.word + ']>' as row "
+                //+ "CONVERT(varchar(5),ROW_NUMBER() OVER(ORDER BY SUM(a.score) DESC)) + ' ： ' + '<https://twitter.com/search?q=' + REPLACE(a.word,'#','%23') + '&src=tren|[' + a.word + ']>' as row "
+                + "a.word as row "
                 + ",'<https://www.google.co.jp/search?q=' + REPLACE(a.word,'#','') + '|[Google]>' google "
                 + ",'<https://www.google.co.jp/trends/explore?date=now%201-d&geo=JP&q=' + REPLACE(a.word,'#','') + '|[Trend]>' trend "
                 + ",dbo.funcExistTwitterTrendMasterHour(a.word) + ':' newflg "
@@ -311,6 +312,9 @@ function executeStatement(session, connection, sql, title, timeFlg) {
   // タイトルを付与
   result = title;
 
+  // カウンタ変数
+  var loopcnt = 0;
+
   // 検索結果判定フラグ
   var searchResult = 0;
 
@@ -328,12 +332,17 @@ function executeStatement(session, connection, sql, title, timeFlg) {
       if (column.value === null) {
         console.log('NULL');
       } else {
-        result += encodeURI(column.value) + " ";
+        if (loopcnt == 0) {
+          result += "<https://twitter.com/search?q=" + encodeURI(column.value) + "&src=tren|[' + a.word + ']>";
+        }
+        result += column.value + " ";
+        loopcnt++;
       }
     });
     // 改行をセット
     result += "\n\n";
     searchResult = 1;
+    loopcnt = 0;
   });
 
   // 最後に呼ばれる
