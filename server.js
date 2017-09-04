@@ -358,7 +358,7 @@ function executeStatement(session, connection, sql, title, timeFlg) {
             // ハッシュタグがある場合は#はエンコードしない
             if ( column.value.indexOf('#') != -1 ) {
                 var replacetext = column.value.replace('#','');
-                result += ploopcnt + ":" + "<https://twitter.com/search?q=#" + encodeURI(replacetext) + "&src=tren|[" + column.value + "]>";
+                result += ploopcnt + ":" + "<https://twitter.com/search?q=%23" + encodeURI(replacetext) + "&src=tren|[" + column.value + "]>";
             } else
                 result += ploopcnt + ":" + "<https://twitter.com/search?q=" + encodeURI(column.value) + "&src=tren|[" + column.value + "]>";
           }
