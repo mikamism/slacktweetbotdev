@@ -355,7 +355,12 @@ function executeStatement(session, connection, sql, title, timeFlg) {
           if( title.indexOf("Yahoo") != -1 ) {
             result += ploopcnt + ":" + "<http://search.yahoo.co.jp/search?p=" + encodeURI(column.value) + "&fr=krank_hb_new&ei=UTF-8&rkf=1|[" + column.value + "]>";
           } else {
-            result += ploopcnt + ":" + "<https://twitter.com/search?q=" + encodeURI(column.value) + "&src=tren|[" + column.value + "]>";
+            // ハッシュタグがある場合は#はエンコードしない
+            if ( column.value.indexOf('#') != -1 ) {
+                var replacetext = column.value.replace('#','');
+                result += ploopcnt + ":" + "<https://twitter.com/search?q=#" + encodeURI(replacetext) + "&src=tren|[" + column.value + "]>";
+            } else
+                result += ploopcnt + ":" + "<https://twitter.com/search?q=" + encodeURI(column.value) + "&src=tren|[" + column.value + "]>";
           }
         } else if (loopcnt == 1) {
           result += "<https://www.google.co.jp/search?q=" + encodeURI(column.value) + "|[Google]>";
